@@ -1,0 +1,166 @@
+1. Give the count of the minimum number of days for the time when temperature reduced
+
+SELECT COUNT(*)
+FROM (SELECT Date, Temperature, 
+             LAG(Temperature) OVER (ORDER BY Date) AS prev_temp
+      FROM weather_dataset_v2) t
+WHERE temperature < prev_temp;
+
+1829
+
+______________________________________________________________________________________________________
+
+2. Find the temperature as Cold / hot by using the case and avg of values of the given data set
+
+
+SELECT
+    Date,
+    Temperature,
+    AVG(Temperature) OVER() AS avg_temp,
+    (CASE 
+        WHEN Temperature >= AVG(Temperature) OVER() THEN 'Hot'
+        ELSE 'Cold'
+     END) AS temp_label
+FROM 
+    weather_dataset_v2;
+
+______________________________________________________________________________________________________
+
+
+3.   Can you check for all 4 consecutive days when the temperature was below 30 Fahrenheit
+
+CREATE TEMPORARY TABLE t1 SELECT Date, Temperature,
+         SUM(CASE WHEN Temperature < 30 THEN 1 ELSE 0 END)
+           OVER (ORDER BY Date ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS below_30_count
+  FROM weather_dataset_v2;
+  SELECT date, temperature FROM t1 WHERE below_30_count = 4;
+
+______________________________________________________________________________________________________
+
+
+4.  Can you find the maximum number of days for which temperature dropped
+
+
+WITH weather_data_temp AS (
+  SELECT 
+    Date, 
+    Temperature, 
+    LAG(Temperature, 1) OVER (ORDER BY Date) AS prev_temp 
+  FROM weather_dataset_v2
+) 
+SELECT 
+  Date, 
+  Temperature, 
+  prev_temp, 
+  CASE 
+    WHEN prev_temp <= Temperature THEN 0
+    ELSE 1 
+  END AS drop_temp_indicator, 
+  SUM(CASE 
+    WHEN prev_temp <= Temperature THEN 0
+    ELSE 1 
+  END) 
+    OVER (ORDER BY Date 
+          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) 
+  AS drop_temp_count 
+FROM weather_data_temp 
+ORDER BY Date;
+
+
+
+______________________________________________________________________________________________________
+
+5.  Can you find the average of average humidity from the dataset
+
+select avg(avg_humidity) as avg_of_avg_hum
+from
+(select Date,avg(`Average humidity (%)`) as avg_humidity
+	from weather_dataset_v2
+    group by Date) as derivedtable;
+
+______________________________________________________________________________________________________
+
+6. Use the GROUP BY clause on the Date column and make a query to fetch details for average windspeed ( which is now windspeed done in task 3 ) ( NOTE: should contain the following clauses: group by, order by, date )
+
+SELECT
+    Date, `Average windspeed (mph)` AS avg_wind_speed
+FROM
+    weather_dataset_v2
+GROUP BY Date,`Average windspeed (mph)`
+LIMIT 25;
+
+
+______________________________________________________________________________________________________
+
+7. Please add the data in the dataset for 2034 and 2035 as well as forecast predictions for these years
+
+
+
+
+______________________________________________________________________________________________________
+
+8. If the maximum gust speed increases from 55mph, fetch the details for the next 4 days ( NOTE: data consistency and uniformity should be maintained )
+
+SELECT 
+  Date, 
+  Temperature, 
+  `Average humidity (%)`, 
+  `Average dewpoint (Â°F)`, 
+  `Average barometer (in)`, 
+  `Average windspeed (mph)`, 
+  `Average gustspeed (mph)`, 
+  `Average direction (Â°deg)`, 
+  `Rainfall for month (in)`, 
+  `Rainfall for year (in)`, 
+  `Maximum rain per minute`, 
+  `Maximum temperature (Â°F)`, 
+  `Minimum temperature (Â°F)`, 
+  `Maximum humidity (%)`, 
+  `Minimum humidity (%)`, 
+  `Maximum pressure`, 
+  `Minimum pressure`, 
+  `Maximum windspeed (mph)`, 
+  `Maximum gust speed (mph)`, 
+  `Maximum heat index (Â°F)`, 
+  Month, 
+  diff_pressure
+FROM weather_dataset_v2
+WHERE 
+  Date >= (
+    SELECT MIN(Date) 
+    FROM weather_dataset_v2 
+    WHERE `Maximum gust speed (mph)` >= 55
+  ) 
+  AND Date <= (
+    SELECT MIN(Date) + INTERVAL 4 DAY 
+    FROM weather_dataset_v2 
+    WHERE `Maximum gust speed (mph)` >= 55
+  )
+ORDER BY 
+  Date;
+
+
+
+______________________________________________________________________________________________________
+
+9. Find the number of days when the temperature went below 0 degrees Celsius
+
+Select count(Date)
+from(select Date,Temperature
+	from weather_dataset_v2
+    where Temperature<0) as dp;
+
+14
+
+
+
+______________________________________________________________________________________________________
+
+10. Create another table with a “Foreign key” relation with the existing given data set.
+
+alter table weather_dataset_v2
+add column id int Auto_increment primary key first;
+create table weatherapp(
+id int auto_increment primary key
+dataID int NOT NULL,
+foreign key (dataID) references weather_dataset_v2(id)
