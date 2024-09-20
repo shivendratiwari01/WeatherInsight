@@ -26,12 +26,6 @@
 <details open><summary>Python:</summary> Used for developing custom scripts and algorithms that are used to process and analyze the weather data. The project also makes use of various Python libraries such as Pandas and Matplotlib for data analysis and visualization purposes.</details>
 <hr>
 
-<h3>:house: Data Wizards Members </h3>
 
-1. [Abdul Rehaman](https://github.com/AR10X)
-2. [Ashrith M R](https://github.com/ashhh-01)
-3. [Danish Hasan](https://github.com/DanishHasan14321)
-4. [Shiwali Verma](https://github.com/AR10X/data-analysis)
-<hr>
 
 
